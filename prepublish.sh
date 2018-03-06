@@ -56,4 +56,4 @@ geo2topo -n \
   | topomerge --mesh -f 'a !== b' counties=counties \
   | topomerge --mesh -f 'a == b' states=states \
   | topoquantize 1e5 \
-  > tx-topo.json
+  > ak.json

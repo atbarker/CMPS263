@@ -39,6 +39,7 @@ fi
 # 4. Compute the population density.
 # 5. Simplify.
 # 6. Compute the county borders.
+#code modified to handle the state borders and to limit state borders to relevant arcs
 geo2topo -n \
   tracts=<(ndjson-join 'd.id' \
     <(shp2json cb_${YEAR}_${STATE}_tract_500k.shp \

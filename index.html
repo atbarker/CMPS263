@@ -67,7 +67,7 @@ g.call(d3.axisBottom(x)
     .remove();
     
 function drawMap(){
-    d3.json("ak-topo.json", function(error, topology) {
+    d3.json("ak.json", function(error, topology) {
         if (error) throw error;
 
         svg.append("g")

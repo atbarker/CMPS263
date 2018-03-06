@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+	<head></head>
+	<body>
+        <h1 style = "text-align:center;"><bold>Alaska Population Density, 2014 </bold></h1>
+	</body>
+</html>
+<svg width="960" height="860"></svg>
+<script src="https://d3js.org/topojson.v2.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script>
+
+//Worked with Matt Bryson and Staunton Sample
+    
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var path = d3.geoPath();
+
+//determines state
+var colorscheme = 1;
+var stateborder = 1;
+var tracts = 1;
+
+var color = d3.scaleThreshold()
+    .domain([1, 10, 50, 200, 500, 1000, 2000, 4000])
+    .range(d3.schemeOrRd[9]);
+
+var x = d3.scaleSqrt()
+    .domain([0, 4500])
+    .rangeRound([440, 950]);
+    
+drawMap();
+    
+var g = svg.append("g")
+    .attr("class", "key")
+    .attr("transform", "translate(0,40)");
+
+g.selectAll("rect")
+  .data(color.range().map(function(d) {
+      d = color.invertExtent(d);
+      if (d[0] == null) d[0] = x.domain()[0];
+      if (d[1] == null) d[1] = x.domain()[1];
+      return d;
+    }))
+  .enter().append("rect")
+    .attr("height", 8)
+    .attr("x", function(d) { return x(d[0]); })
+    .attr("width", function(d) { return x(d[1]) - x(d[0]); })
+    .attr("fill", function(d) { return color(d[0]); });
+
+g.append("text")
+    .attr("class", "caption")
+    .attr("x", x.range()[0])
+    .attr("y", -6)
+    .attr("fill", "#000")
+    .attr("text-anchor", "start")
+    .attr("font-weight", "bold")
+    .text("Population per square mile");
+
+g.call(d3.axisBottom(x)
+    .tickSize(13)
+    .tickValues(color.domain()))
+  .select(".domain")
+    .remove();
+    
+function drawMap(){
+    d3.json("ak-topo.json", function(error, topology) {
+        if (error) throw error;
+
+        svg.append("g")
+        .selectAll("path")
+        .data(topojson.feature(topology, topology.objects.tracts).features)
+        .enter().append("path")
+            .attr("fill", function(d) { return color(d.properties.density); })
+            .attr("d", path);
+
+        svg.append("path")
+        .datum(topojson.feature(topology, topology.objects.counties))
+        .attr("fill", "none")
+        .attr("stroke", "#000")
+        .attr("stroke-opacity", 0.3)
+        .attr("d", path);
+        
+        if(tracts === 2){
+            svg.append("path")
+            .datum(topojson.feature(topology, topology.objects.tracts))
+            .attr("fill", "none")
+            .attr("stroke", "#000")
+            .attr("stroke-opacity", 0.3)
+            .attr("d", path);
+        }
+        
+        if(stateborder === 2){
+            svg.append("path")
+            .datum(topojson.feature(topology, topology.objects.states))
+            .attr("fill", "none")
+            .attr("stroke", "#000")
+            .attr("stroke-opacity", 1)
+            .attr("d", path);
+        }
+    });
+}
+    
+function changeColor(){
+    if (colorscheme === 1){
+        colorscheme = 2;
+	    color = d3.scaleThreshold()
+        .domain([1, 10, 50, 200, 500, 1000, 2000, 4000])
+	    //d3.schemeGnBu[k]
+        .range(d3.schemeGnBu[9]);
+    } else {
+        colorscheme = 1;
+        color = d3.scaleThreshold()
+        .domain([1, 10, 50, 200, 500, 1000, 2000, 4000])
+	    //d3.schemeGnBu[k]
+        .range(d3.schemeOrRd[9]);
+    }
+	    g.append("rect")
+	    .data(color.range().map(function(d) {
+        d = color.invertExtent(d);
+        if (d[0] == null) d[0] = x.domain()[0];
+        if (d[1] == null) d[1] = x.domain()[1];
+		    //console.log(d[0]);
+		    //console.log(color(d[0]));
+        return d;
+        }))
+	    .enter().selectAll("rect")
+        .attr("height", 8)
+        .attr("x", function(d) { return x(d[0]); })
+        .attr("width", function(d) { return x(d[1]) - x(d[0]); })
+        .attr("fill", function(d) { return color(d[0]); });
+        drawMap(); 
+}
+    
+function stateBoundary(){
+    if(stateborder === 1){
+        drawMap();
+        stateborder = 2;
+    }else{
+        drawMap();
+        stateborder = 1;
+    }
+    
+}
+    
+function censusTract(){
+    if(tracts === 1){
+        drawMap();
+        tracts = 2;
+    }else{
+        drawMap();
+        tracts = 1;
+    }
+}
+
+</script> 
+<html>
+	<head></head>
+	<body>
+		<div id="option">
+    	<input name="updateButton" 
+           type="button" 
+           value="Change Color Scheme" 
+           onclick="changeColor()" />
+		</div>
+        <div id="option">
+    	<input name="updateButton2" 
+           type="button" 
+           value="Toggle State Boundary" 
+           onclick="stateBoundary()" />
+		</div>
+        <div id="option">
+    	<input name="updateButton3" 
+           type="button" 
+           value="Toggle Census Tract Boundary" 
+           onclick="censusTract()" />
+		</div>
+        <p>Austen Barker</p>
+        <p>Instructor: Suresh Lodha</p>
+        <p>CMPS 263: Data Programming for Visualization</p>
+        <p>Winter 2018</p>
+	</body>
+</html>

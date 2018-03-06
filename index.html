@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Worked with Staunton Sample and Matthew Bryson-->
 <html>
 	<head></head>
 	<body>
@@ -19,7 +20,7 @@ var svg = d3.select("svg"),
 
 var path = d3.geoPath();
 
-//determines state
+//determines state for color, state borders, and tracts
 var colorscheme = 1;
 var stateborder = 1;
 var tracts = 1;
@@ -32,12 +33,14 @@ var x = d3.scaleSqrt()
     .domain([0, 4500])
     .rangeRound([440, 950]);
     
+//call the draw map function
 drawMap();
     
 var g = svg.append("g")
     .attr("class", "key")
     .attr("transform", "translate(0,40)");
 
+//draw key rectangles
 g.selectAll("rect")
   .data(color.range().map(function(d) {
       d = color.invertExtent(d);
@@ -51,6 +54,7 @@ g.selectAll("rect")
     .attr("width", function(d) { return x(d[1]) - x(d[0]); })
     .attr("fill", function(d) { return color(d[0]); });
 
+//append key label
 g.append("text")
     .attr("class", "caption")
     .attr("x", x.range()[0])
@@ -60,6 +64,7 @@ g.append("text")
     .attr("font-weight", "bold")
     .text("Population per square mile");
 
+//axis ticks for the label
 g.call(d3.axisBottom(x)
     .tickSize(13)
     .tickValues(color.domain()))
@@ -67,23 +72,25 @@ g.call(d3.axisBottom(x)
     .remove();
     
 function drawMap(){
+    //take in data
     d3.json("ak.json", function(error, topology) {
         if (error) throw error;
 
+	//the tracts are being appended and drawn
         svg.append("g")
         .selectAll("path")
         .data(topojson.feature(topology, topology.objects.tracts).features)
         .enter().append("path")
             .attr("fill", function(d) { return color(d.properties.density); })
             .attr("d", path);
-
+	//county lines
         svg.append("path")
         .datum(topojson.feature(topology, topology.objects.counties))
         .attr("fill", "none")
         .attr("stroke", "#000")
         .attr("stroke-opacity", 0.3)
         .attr("d", path);
-        
+        //tract lines
         if(tracts === 2){
             svg.append("path")
             .datum(topojson.feature(topology, topology.objects.tracts))
@@ -92,7 +99,7 @@ function drawMap(){
             .attr("stroke-opacity", 0.3)
             .attr("d", path);
         }
-        
+        //state border
         if(stateborder === 2){
             svg.append("path")
             .datum(topojson.feature(topology, topology.objects.states))
@@ -103,7 +110,7 @@ function drawMap(){
         }
     });
 }
-    
+   //redraw and change state for each click on the button
 function changeColor(){
     if (colorscheme === 1){
         colorscheme = 2;
